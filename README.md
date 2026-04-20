@@ -13,7 +13,7 @@ Before you begin, ensure you have the following installed on your machine:
 ## 🚀 First-Time Setup (Onboarding)
 If this is your first time working on the project, follow these steps to rebuild the environment on your local machine.
 
-**1. Clone the repository**
+**Copy and Paste to your terminal to download everything needed**
 ```bash
 git clone [https://github.com/ajee0222/ADDmeCART.git](https://github.com/ajee0222/ADDmeCART.git)
 cd ADDmeCART

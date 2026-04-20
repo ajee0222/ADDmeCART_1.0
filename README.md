@@ -13,8 +13,6 @@ If this is your first time working on the project, follow these steps to rebuild
 
 **1. Clone the repository**
 ```bash
-in your terminal,
-
 git clone [https://github.com/ajee0222/ADDmeCART.git](https://github.com/ajee0222/ADDmeCART.git)
 
 cd addmecart
@@ -24,4 +22,4 @@ composer install
 php bin/console doctrine:database:create
 php bin/console doctrine:schema:create
 
-php -S 127.0.0.1:8000 -t public        || local server-(http://127.0.0.1:8000/products)
+php -S 127.0.0.1:8000 -t public  

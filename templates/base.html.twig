@@ -2,10 +2,48 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="stylesheet" href="{{ asset('css/simple.css') }}">
-    </head>   
-    <body>
-        {% block body %}{% endblock %}
+        <title>{% block title %}ADDmeCART{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🛒</text></svg>">
+        
+        {% block stylesheets %}
+            {# You can link your global CSS files here later #}
+        {% endblock %}
+
+        {% block javascripts %}
+            {# You can link your global JS files here later #}
+        {% endblock %}
+    </head>
+    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+        
+        {# ========================================== #}
+        {# GLOBAL FLASH MESSAGES (Errors & Successes) #}
+        {# ========================================== #}
+        <div class="flash-messages" style="max-width: 800px; margin: 0 auto; padding-top: 20px;">
+            
+            {# 1. Check for Green Success Messages #}
+            {% for message in app.flashes('success') %}
+                <div style="color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; padding: 15px; margin-bottom: 20px; border-radius: 5px; text-align: center; font-weight: bold;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            {# 2. Check for Red Error Messages #}
+            {% for message in app.flashes('error') %}
+                <div style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; margin-bottom: 20px; border-radius: 5px; text-align: center; font-weight: bold;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            
+        </div>
+
+        {# ========================================== #}
+        {# MAIN PAGE CONTENT INJECTED HERE            #}
+        {# ========================================== #}
+        <main>
+            {% block body %}
+                {# The code from your checkout/index.html.twig (and other pages) gets automatically injected right here! #}
+            {% endblock %}
+        </main>
+
     </body>
 </html>

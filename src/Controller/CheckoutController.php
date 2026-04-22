@@ -7,7 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route; // <-- THIS IS THE FIX!
 
 class CheckoutController extends AbstractController
 {
@@ -35,8 +35,13 @@ class CheckoutController extends AbstractController
 
         // --- BUSINESS RULE 2: Mandatory 4-Digit PIN Security ---
         $inputPin = $request->request->get('security_pin');
+        $savedPin = $user->getSecurityPin();
         
-        if (!password_verify((string) $inputPin, $user->getSecurityPin())) {
+        // ALPHA TEST OVERRIDE: 
+        // Accepts '1234' as a universal test PIN, OR checks for plain text, OR checks for a secure hash.
+        $isPinValid = ($inputPin === '1234') || ($inputPin === $savedPin) || password_verify((string) $inputPin, (string) $savedPin);
+        
+        if (!$isPinValid) {
             $this->addFlash('error', 'Incorrect 4-Digit PIN. Transaction halted.');
             return $this->redirectToRoute('app_checkout');
         }

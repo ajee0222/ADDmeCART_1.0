@@ -1,34 +1,49 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Log in!{% endblock %}
+{% block title %}Log in - ADDmeCART{% endblock %}
 
 {% block body %}
-<form method="post">
-    {% if error %}
-        <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-    {% endif %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; background-color: #ffffff; padding: 20px;">
+    
+    <form method="post" style="width: 100%; max-width: 400px; padding: 40px; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); background-color: #ffffff;">
 
-    {% if app.user %}
-        <div class="mb-3">
-            You are logged in as {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}">Logout</a>
+        {% if error %}
+            <div style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 12px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold;">
+                {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        {% if app.user %}
+            <div style="margin-bottom: 20px; text-align: center; color: #333; background-color: #e2e3e5; padding: 10px; border-radius: 4px;">
+                You are logged in as <strong>{{ app.user.userIdentifier }}</strong>. <br>
+                <a href="{{ path('app_logout') }}" style="color: #0056b3; font-weight: bold; text-decoration: none; display: inline-block; margin-top: 5px;">Logout here</a>
+            </div>
+        {% endif %}
+
+        <h1 style="font-size: 28px; font-weight: bold; margin-bottom: 30px; text-align: center; color: #333;">Please sign in</h1>
+
+        <div style="margin-bottom: 20px;">
+            <label for="inputEmail" style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Email</label>
+            <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px;">
         </div>
-    {% endif %}
 
-    <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-    <label for="inputEmail">Email</label>
-    <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
-    <label for="inputPassword">Password</label>
-    <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
-    <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+        <div style="margin-bottom: 20px;">
+            <label for="inputPassword" style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Password</label>
+            <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px;">
+        </div>
 
-    <div class="checkbox mb-3">
-        <label>
-            <input type="checkbox" name="_remember_me"> Remember me
-        </label>
-    </div>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-    <button class="btn btn-lg btn-primary" type="submit">
-        Sign in
-    </button>
-</form>
+        <div style="margin-bottom: 25px; display: flex; align-items: center;">
+            <label style="display: flex; align-items: center; cursor: pointer; color: #555; font-weight: 500;">
+                <input type="checkbox" name="_remember_me" style="margin-right: 10px; width: 16px; height: 16px;"> Remember me
+            </label>
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 14px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; text-transform: uppercase; letter-spacing: 1px;">
+            Sign in
+        </button>
+        
+    </form>
+</div>
 {% endblock %}

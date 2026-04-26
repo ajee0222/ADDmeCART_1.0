@@ -40,6 +40,11 @@ class ProductController extends AbstractController
     #[Route('/product/new', name: 'app_product_new')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
+        // --- SECURITY LOCK ---
+        // This acts as the bouncer. If a user is not logged in, they are immediately 
+        // kicked back to the login page and cannot view the product form!
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
         // 1. Create a blank Product object
         $product = new Product();
         

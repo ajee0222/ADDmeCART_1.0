@@ -11,8 +11,7 @@ final class HomeController extends AbstractController
     #[Route('/', name: 'app_home')]
     public function index(): Response
     {
-        return $this->render('home/index.html.twig', [
-            'controller_name' => 'HomeController',
-        ]);
+        // Instantly redirect the user to the Product Catalog
+        return $this->redirectToRoute('app_product_catalog');
     }
 }

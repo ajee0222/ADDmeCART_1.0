@@ -12,20 +12,6 @@
         margin: 0; 
         padding: 40px; 
     }
-    
-    /* Navigation Bar */
-    .top-nav {
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        margin-bottom: 40px; 
-        border-bottom: 1px solid #eaeaea; 
-        padding-bottom: 15px;
-    }
-    .nav-links a { color: #3498db; text-decoration: none; font-weight: 600; margin-right: 15px; }
-    .nav-links a:hover { color: #2980b9; }
-    .cart-link { font-weight: bold; font-size: 1.1em; color: #2c3e50; text-decoration: none; display: flex; align-items: center; gap: 8px; }
-    .cart-link:hover { color: #3498db; }
 
     /* Search Bar */
     .search-container { margin-bottom: 30px; }
@@ -74,25 +60,6 @@
 {% for message in app.flashes('error') %}
     <div class="alert alert-error">{{ message }}</div>
 {% endfor %}
-
-{# --- TOP NAVIGATION BAR --- #}
-<div class="top-nav">
-    <div class="nav-links">
-        {% if app.user %}
-            <span style="font-weight: bold; color: #2ecc71; margin-right: 15px;">Hi, {{ app.user.firstName }}!</span>
-            <a href="{{ path('app_logout') }}" style="color: #e74c3c;">Log Out</a>
-        {% else %}
-            <a href="{{ path('app_login') }}">Log In</a>
-            <a href="{{ path('app_register') }}">Register</a>
-        {% endif %}
-    </div>
-    <div>
-        <a href="{{ path('app_cart_index') }}" class="cart-link">
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-            View Cart
-        </a>
-    </div>
-</div>
 
 <h1 style="margin-top: 0; color: #2c3e50;">Product Catalog</h1>
 

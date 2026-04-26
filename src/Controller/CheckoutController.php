@@ -15,8 +15,36 @@ class CheckoutController extends AbstractController
     #[Route('/checkout', name: 'app_checkout')]
     public function index(): Response
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        return $this->render('checkout/index.html.twig');
+        // 1. Get the currently logged-in user
+        $user = $this->getUser();
+        
+        // Security check: kick them to login if they aren't logged in
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        // 2. Fetch their cart
+        $cart = $user->getCart();
+        
+        // 3. Initialize totals at zero
+        $totalItems = 0;
+        $total = 0;
+
+        // 4. If they have a cart, calculate the real math!
+        if ($cart) {
+            foreach ($cart->getCartItems() as $item) {
+                $totalItems += $item->getQuantity();
+                // Match the exact math from the CartController
+                $total += $item->getProduct()->getPrice() * $item->getQuantity();
+            }
+        }
+
+        // 5. Send the dynamic numbers to the visual Checkout Template
+        return $this->render('checkout/index.html.twig', [
+            'totalItems' => $totalItems,
+            'total' => $total,          // Covering the 'total' variable name
+            'grandTotal' => $total,     // Covering the 'grandTotal' variable name
+        ]);
     }
 
     // --- MOCK API ENDPOINT FOR PRESENTATION ---

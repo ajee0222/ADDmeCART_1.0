@@ -3,73 +3,95 @@
 {% block title %}ADDmeCART - My Cart{% endblock %}
 
 {% block body %}
+{# --- WRAPPER DIV TO FIX THE MASTER NAV ALIGNMENT --- #}
+<div style="padding: 40px; background-color: #FFFFFF; font-family: Arial, sans-serif; color: #333;">
 
-<style>
-    /* Enforcing the mandatory SRS White Background constraint */
-    body { background-color: #FFFFFF; font-family: Arial, sans-serif; color: #333; margin: 40px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border-bottom: 1px solid #ddd; padding: 12px; text-align: left; }
-    th { background-color: #f9f9f9; font-weight: bold; }
-    .total-row { font-size: 1.2em; font-weight: bold; color: #2ecc71; text-align: right; margin-top: 20px; }
-    .btn-checkout { background-color: #2ecc71; color: white; border: none; padding: 12px 20px; font-weight: bold; cursor: pointer; border-radius: 4px; display: inline-block; text-decoration: none; margin-top: 20px; float: right;}
-    .btn-checkout:hover { background-color: #27ae60; }
-    .nav-link { margin-bottom: 20px; display: inline-block; color: #3498db; text-decoration: none; }
-</style>
-   
-<a href="{{ path('app_product_catalog') }}" class="nav-link">← Back to Catalog</a>
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border-bottom: 1px solid #ddd; padding: 12px; text-align: left; vertical-align: middle; }
+        th { background-color: #f9f9f9; font-weight: bold; }
+        .total-row { font-size: 1.2em; font-weight: bold; color: #2ecc71; text-align: right; margin-top: 20px; }
+        .btn-checkout { background-color: #2ecc71; color: white; border: none; padding: 12px 20px; font-weight: bold; cursor: pointer; border-radius: 4px; display: inline-block; text-decoration: none; margin-top: 20px; float: right;}
+        .btn-checkout:hover { background-color: #27ae60; }
+        .nav-link { margin-bottom: 20px; display: inline-block; color: #3498db; text-decoration: none; }
+    </style>
+       
+    <a href="{{ path('app_product_catalog') }}" class="nav-link">← Back to Catalog</a>
 
-<h1>My Shopping Cart</h1>
+    <h1 style="margin-top: 0;">My Shopping Cart</h1>
 
-{# Show success or error messages #}
-{% for message in app.flashes('success') %}
-    <div style="background-color: #d4edda; color: #155724; padding: 10px; margin-bottom: 15px; border-radius: 4px; border-left: 4px solid #2ecc71;">
-        {{ message }}
-    </div>
-{% endfor %}
-{% for message in app.flashes('error') %}
-    <div style="background-color: #f8d7da; color: #721c24; padding: 10px; margin-bottom: 15px; border-radius: 4px; border-left: 4px solid #e74c3c;">
-        {{ message }}
-    </div>
-{% endfor %}
+    {# Show success or error messages #}
+    {% for message in app.flashes('success') %}
+        <div style="background-color: #d4edda; color: #155724; padding: 10px; margin-bottom: 15px; border-radius: 4px; border-left: 4px solid #2ecc71;">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div style="background-color: #f8d7da; color: #721c24; padding: 10px; margin-bottom: 15px; border-radius: 4px; border-left: 4px solid #e74c3c;">
+            {{ message }}
+        </div>
+    {% endfor %}
 
-{% if cartItems|length > 0 %}
-   <table>
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Subtotal</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in cartItems %}
+    {% if cartItems|length > 0 %}
+       <table>
+            <thead>
                 <tr>
-                    <td>{{ item.product.name }}</td>
-                    <td>{{ item.product.category }}</td>
-                    <td>₱{{ item.product.price|number_format(2) }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>₱{{ (item.product.price * item.quantity)|number_format(2) }}</td>
-                    <td>
-                        <a href="{{ path('app_cart_remove', {'id': item.id}) }}" style="color: #e74c3c; text-decoration: none; font-weight: bold; padding: 5px 10px; border: 1px solid #e74c3c; border-radius: 4px; transition: 0.2s;">
-                            ✕ Remove
-                        </a>
-                    </td>
+                    <th>Image</th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                    <th>Action</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for item in cartItems %}
+                    <tr>
+                        {# --- THUMBNAIL IMAGE COLUMN --- #}
+                        <td style="width: 70px;">
+                            {% if item.product.thumbnailImage %}
+                                <img src="{{ item.product.thumbnailImage }}" alt="{{ item.product.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; display: block;">
+                            {% else %}
+                                <div style="width: 60px; height: 60px; background-color: #f8f9fa; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #adb5bd; font-size: 10px; font-weight: bold; border: 1px solid #eee; text-align: center;">
+                                    No Img
+                                </div>
+                            {% endif %}
+                        </td>
 
-    <div class="total-row">
-        Grand Total: ₱{{ total|number_format(2) }}
-    </div>
+                        <td style="font-weight: bold; color: #2c3e50;">{{ item.product.name }}</td>
+                        <td>{{ item.product.category }}</td>
+                        <td>₱{{ item.product.price|number_format(2) }}</td>
+                        
+                        {# --- QUANTITY COLUMN (PERFECTLY ALIGNED) --- #}
+                        <td style="vertical-align: middle;">
+                            <div style="display: inline-flex; align-items: center; gap: 10px;">
+                                <a href="{{ path('app_cart_decrease', {'id': item.id}) }}" style="padding: 5px 12px; background-color: #f1f2f6; text-decoration: none; color: #333; border-radius: 4px; font-weight: bold; transition: 0.2s;">-</a>
+                                <span style="font-size: 16px; font-weight: bold; width: 25px; text-align: center;">{{ item.quantity }}</span>
+                                <a href="{{ path('app_cart_increase', {'id': item.id}) }}" style="padding: 5px 12px; background-color: #f1f2f6; text-decoration: none; color: #333; border-radius: 4px; font-weight: bold; transition: 0.2s;">+</a>
+                            </div>
+                        </td>
 
-    {# This button sets us up perfectly for Phase 5: Secure Checkout #}
-    <a href="#" class="btn-checkout">Proceed to Checkout</a>
-    <div style="clear:both;"></div>
-{% else %}
-    <p>Your cart is currently empty. Head over to the catalog to add some items!</p>
-{% endif %}
+                        <td style="font-weight: bold;">₱{{ (item.product.price * item.quantity)|number_format(2) }}</td>
+                        <td>
+                            <a href="{{ path('app_cart_remove', {'id': item.id}) }}" style="color: #e74c3c; text-decoration: none; font-weight: bold; padding: 5px 10px; border: 1px solid #e74c3c; border-radius: 4px; transition: 0.2s;">
+                                ✕ Remove
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="total-row">
+            Grand Total: ₱{{ total|number_format(2) }}
+        </div>
+
+        <a href="{{ path('app_checkout') }}" class="btn-checkout">Proceed to Checkout</a>
+        <div style="clear:both;"></div>
+    {% else %}
+        <p>Your cart is currently empty. Head over to the catalog to add some items!</p>
+    {% endif %}
+
+</div>
 {% endblock %}

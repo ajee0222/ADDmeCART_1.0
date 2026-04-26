@@ -132,4 +132,34 @@ class CartController extends AbstractController
         // 4. Send them right back to the cart page to see the updated total
         return $this->redirectToRoute('app_cart_index');
     }
+
+    #[Route('/cart/increase/{id}', name: 'app_cart_increase')]
+    public function increase(int $id, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        $cartItem = $entityManager->getRepository(CartItem::class)->find($id);
+
+        if ($cartItem && $cartItem->getCart()->getUser() === $user) {
+            $cartItem->setQuantity($cartItem->getQuantity() + 1);
+            $entityManager->flush();
+        }
+        return $this->redirectToRoute('app_cart_index');
+    }
+
+    #[Route('/cart/decrease/{id}', name: 'app_cart_decrease')]
+    public function decrease(int $id, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        $cartItem = $entityManager->getRepository(CartItem::class)->find($id);
+
+        if ($cartItem && $cartItem->getCart()->getUser() === $user) {
+            if ($cartItem->getQuantity() > 1) {
+                $cartItem->setQuantity($cartItem->getQuantity() - 1);
+            } else {
+                $entityManager->remove($cartItem);
+            }
+            $entityManager->flush();
+        }
+        return $this->redirectToRoute('app_cart_index');
+    }
 }

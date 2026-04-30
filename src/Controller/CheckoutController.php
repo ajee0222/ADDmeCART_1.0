@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Order;
+use App\Entity\OrderItem;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -121,20 +122,26 @@ class CheckoutController extends AbstractController
         $entityManager->persist($order);
         
         // ==========================================
-        // BUG 2 FIX: Deduct Stock & Empty the Cart
+        // BUG 2 FIX: Deduct Stock, Save Items, & Empty Cart
         // ==========================================
         if ($cart) {
             foreach ($cart->getCartItems() as $cartItem) {
                 $product = $cartItem->getProduct();
                 
-                // Mathematically subtract the bought amount from the warehouse stock
+                // 1. Mathematically subtract the bought amount from the warehouse stock
                 $newStock = $product->getStockQuantity() - $cartItem->getQuantity();
                 $product->setStockQuantity($newStock);
-                
-                // Tell Doctrine to save the new product stock amount
                 $entityManager->persist($product); 
 
-                // Delete the item from the user's cart
+                // 2. --- THE MISSING LINK: SAVE THE ACTUAL ORDER ITEM ---
+                $orderItem = new OrderItem();
+                $orderItem->setProduct($product);
+                $orderItem->setQuantity($cartItem->getQuantity());
+                $orderItem->setPrice($product->getPrice()); // Lock in today's price!
+                $orderItem->setOrderRef($order); // Attach it to the receipt
+                $entityManager->persist($orderItem);
+
+                // 3. Delete the temporary item from the user's cart
                 $entityManager->remove($cartItem);
             }
         }

@@ -21,13 +21,20 @@
             
             <div style="margin-bottom: 20px; text-align: left;">
                 <label for="security_pin" style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Enter 4-Digit Security PIN</label>
-                <input type="password" name="security_pin" id="security_pin" maxlength="4" required style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; letter-spacing: 5px; text-align: center;">
+                <input type="password" name="security_pin" id="security_pin" maxlength="4" required pattern="\d{4}" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; letter-spacing: 5px; text-align: center;">
             </div>
 
+            <!-- THE HIDDEN FIELD -->
             <input type="hidden" name="transaction_id" id="transaction_id" value="">
 
-            <button type="button" id="apiTestBtn" onclick="runMockApiTest()" style="width: 100%; padding: 14px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; text-transform: uppercase; letter-spacing: 1px;">
+            <!-- API Verification Button -->
+            <button type="button" id="apiTestBtn" onclick="runMockApiTest()" style="width: 100%; padding: 14px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">
                 Verify API Payment
+            </button>
+
+            <!-- Final Submit Button (Hidden until API succeeds) -->
+            <button type="submit" id="btn-submit-order" style="display: none; width: 100%; padding: 14px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; text-transform: uppercase; letter-spacing: 1px;">
+                Complete Order
             </button>
         </form>
 
@@ -38,6 +45,8 @@
 function runMockApiTest() {
     const pinInput = document.getElementById('security_pin').value;
     const btn = document.getElementById('apiTestBtn');
+    const submitBtn = document.getElementById('btn-submit-order');
+    const hiddenInput = document.getElementById('transaction_id');
     
     if(pinInput.length !== 4) {
         alert("Please enter your 4-Digit PIN first.");
@@ -57,16 +66,29 @@ function runMockApiTest() {
     .then(response => response.json())
     .then(data => {
         if(data.status === 'success') {
-            // We got the fake API response! Inject the transaction ID into the form
-            document.getElementById('transaction_id').value = data.transaction_id;
+            // ==========================================
+            // TEST CASE 4: THE INJECTION
+            // ==========================================
+            // We take the 'transaction_id' from the JSON and shove it into the hidden input
+            hiddenInput.value = data.transaction_id;
+
+            // Print to console so we can easily see it during QA testing!
+            console.log("SUCCESS! Injected Transaction ID:", hiddenInput.value);
             
-            // Now actually submit the form to save the order
-            document.getElementById('checkoutForm').submit();
+            // Update UI to show success and reveal the final checkout button
+            btn.innerHTML = "API Verification Complete!";
+            btn.style.backgroundColor = "#e9ecef";
+            btn.style.color = "#28a745";
+            
+            submitBtn.style.display = "block"; // Reveal the submit button
         }
     })
     .catch(error => {
+        console.error("API Error: ", error);
         alert("API Connection Failed");
         btn.innerHTML = "Verify API Payment";
+        btn.style.backgroundColor = "#28a745";
+        btn.style.color = "#fff";
         btn.disabled = false;
     });
 }

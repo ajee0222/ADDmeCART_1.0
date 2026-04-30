@@ -5,13 +5,14 @@ namespace App\Form;
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType; // <-- Added this import
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex; 
 
 class RegistrationFormType extends AbstractType
 {
@@ -22,9 +23,6 @@ class RegistrationFormType extends AbstractType
             ->add('lastName')
             ->add('email')
             
-            // ==========================================
-            // THE NEW DROPDOWN FIELD
-            // ==========================================
             ->add('accountType', ChoiceType::class, [
                 'mapped' => false, 
                 'choices'  => [
@@ -36,9 +34,33 @@ class RegistrationFormType extends AbstractType
                 'multiple' => false,
             ])
             
-            ->add('securityPin', null, [
-                'label' => '4-Digit Security PIN (Required for Checkout)'
+            // ==========================================
+            // THE SECURE PIN FIELD (PHP 8 SYMFONY 7 FIX)
+            // ==========================================
+            ->add('securityPin', PasswordType::class, [
+                'label' => '4-Digit Security PIN (Required for Checkout)',
+                'attr' => [
+                    'maxlength' => 4,
+                    'pattern' => '\d{4}',
+                    'inputmode' => 'numeric',
+                    'title' => 'Please enter exactly 4 digits (e.g. 1234)'
+                ],
+                'constraints' => [
+                    new NotBlank(
+                        message: 'A security PIN is required.'
+                    ),
+                    new Length(
+                        min: 4,
+                        max: 4,
+                        exactMessage: 'Your security PIN must be exactly {{ limit }} digits long.'
+                    ),
+                    new Regex(
+                        pattern: '/^\d{4}$/',
+                        message: 'Invalid input. Your PIN can only contain numbers, no letters or symbols.'
+                    ),
+                ],
             ])
+
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
                 'constraints' => [
@@ -48,8 +70,6 @@ class RegistrationFormType extends AbstractType
                 ],
             ])
             ->add('plainPassword', PasswordType::class, [
-                // instead of being set onto the object directly,
-                // this is read and encoded in the controller
                 'mapped' => false,
                 'attr' => ['autocomplete' => 'new-password'],
                 'constraints' => [
@@ -59,7 +79,6 @@ class RegistrationFormType extends AbstractType
                     new Length(
                         min: 6,
                         minMessage: 'Your password should be at least {{ limit }} characters',
-                        // max length allowed by Symfony for security reasons
                         max: 4096
                     ),
                 ],

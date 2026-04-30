@@ -10,7 +10,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted; 
 
+
+#[IsGranted('ROLE_CUSTOMER')]
 class CartController extends AbstractController
 {
     #[Route('/cart/add/{id}', name: 'app_cart_add')]

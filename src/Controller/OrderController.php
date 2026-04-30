@@ -26,18 +26,4 @@ class OrderController extends AbstractController
             'orders' => $orders,
         ]);
     }
-
-    // THIS FIXES BUG 3: Dynamic Order Tracking
-    #[Route('/tracking/{id}', name: 'app_order_tracking')]
-    public function track(Order $order): Response
-    {
-        // Security Check: Make sure users can't track someone else's order!
-        if ($order->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('You cannot track an order that does not belong to you.');
-        }
-
-        return $this->render('order/track.html.twig', [
-            'order' => $order,
-        ]);
-    }
 }

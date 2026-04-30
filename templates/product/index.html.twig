@@ -79,9 +79,17 @@
                     <p class="stock">{{ product.stockQuantity }} left</p>
                 </div>
                 
-                <a href="{{ path('app_cart_add', {'id': product.id}) }}" style="text-decoration: none;">
-                    <button class="btn-add">Add to Cart</button>
-                </a>
+                {# Check if there is stock left #}
+                {% if product.stockQuantity > 0 %}
+                    <a href="{{ path('app_cart_add', {'id': product.id}) }}" style="text-decoration: none;">
+                        <button class="btn-add">Add to Cart</button>
+                    </a>
+                {% else %}
+                    {# Show a disabled Out of Stock button #}
+                    <button class="btn-add" disabled style="background-color: #bdc3c7; cursor: not-allowed;">
+                        Out of Stock
+                    </button>
+                {% endif %}
             </div>
         {% else %}
             <div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #7f8fa6;">

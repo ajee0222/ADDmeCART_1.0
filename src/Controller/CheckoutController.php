@@ -42,8 +42,8 @@ class CheckoutController extends AbstractController
         // 5. Send the dynamic numbers to the visual Checkout Template
         return $this->render('checkout/index.html.twig', [
             'totalItems' => $totalItems,
-            'total' => $total,          // Covering the 'total' variable name
-            'grandTotal' => $total,     // Covering the 'grandTotal' variable name
+            'total' => $total,          
+            'grandTotal' => $total,     
         ]);
     }
 
@@ -63,18 +63,40 @@ class CheckoutController extends AbstractController
         ]);
     }
 
-    #[Route('/checkout/process', name: 'app_checkout_process', methods: ['POST'])]
+#[Route('/checkout/process', name: 'app_checkout_process', methods: ['POST'])]
     public function process(Request $request, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         $user = $this->getUser();
         
-        $totalItemsInCart = 10; 
+        $cart = $user->getCart();
+        $realTotal = 0;
+        $totalItemsInCart = 0;
+
+        // ==========================================
+        // BUG 1 FIX: Validate Stock BEFORE checkout
+        // ==========================================
+        if ($cart) {
+            foreach ($cart->getCartItems() as $item) {
+                $product = $item->getProduct();
+                
+                // If they try to buy more than we have in stock, halt the transaction!
+                if ($item->getQuantity() > $product->getStockQuantity()) {
+                    $this->addFlash('error', 'Inventory error: You requested ' . $item->getQuantity() . 'x of "' . $product->getName() . '", but we only have ' . $product->getStockQuantity() . ' left. Please update your cart.');
+                    return $this->redirectToRoute('app_checkout');
+                }
+
+                $totalItemsInCart += $item->getQuantity();
+                $realTotal += $product->getPrice() * $item->getQuantity();
+            }
+        }
+        
         if ($totalItemsInCart > 300) {
             $this->addFlash('error', 'Cart limit exceeded. You cannot purchase more than 300 items at once.');
             return $this->redirectToRoute('app_checkout');
         }
 
+        // --- PIN Validation ---
         $inputPin = $request->request->get('security_pin');
         $savedPin = $user->getSecurityPin();
         
@@ -86,18 +108,41 @@ class CheckoutController extends AbstractController
             return $this->redirectToRoute('app_checkout');
         }
 
-        // --- Create the Order after Mock API Success ---
+        // --- Create the Order ---
         $order = new Order();
         $order->setUser($user);
-        $order->setOrderStatus('Paid via Mock API'); // Updated status
-        $order->setTotalAmount(999.99); 
-        // Capture the simulated transaction ID from the frontend
+        $order->setOrderStatus('Paid via Mock API');
+        $order->setTotalAmount($realTotal); 
         $order->setTrackingNumber($request->request->get('transaction_id')); 
+
+        $timezone = new \DateTimeZone('Asia/Manila');
+        $order->setCreatedAt(new \DateTimeImmutable('now', $timezone));
         
         $entityManager->persist($order);
+        
+        // ==========================================
+        // BUG 2 FIX: Deduct Stock & Empty the Cart
+        // ==========================================
+        if ($cart) {
+            foreach ($cart->getCartItems() as $cartItem) {
+                $product = $cartItem->getProduct();
+                
+                // Mathematically subtract the bought amount from the warehouse stock
+                $newStock = $product->getStockQuantity() - $cartItem->getQuantity();
+                $product->setStockQuantity($newStock);
+                
+                // Tell Doctrine to save the new product stock amount
+                $entityManager->persist($product); 
+
+                // Delete the item from the user's cart
+                $entityManager->remove($cartItem);
+            }
+        }
+
+        // Save the order, the new product stock amounts, AND the cart deletion all at once
         $entityManager->flush();
 
         $this->addFlash('success', 'API Verification Complete! Your order has been placed securely.');
-        return $this->redirectToRoute('app_home');
+        return $this->redirectToRoute('app_user_orders');
     }
 }

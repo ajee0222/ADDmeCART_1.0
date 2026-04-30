@@ -67,7 +67,9 @@
             
             <div class="nav-menu">
                 <a href="{{ path('app_product_catalog') }}">Shop</a>
-                <a href="{{ path('app_order_tracking') }}">Track Order</a>
+                {% if app.user %}
+                    <a href="{{ path('app_user_orders') }}">My Orders & Tracking</a>
+                {% endif %}
                 
                 {# ========================================== #}
                 {# THE FIX: STRICTLY LOCK NAVBAR LINKS        #}

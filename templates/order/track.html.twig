@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Track Order #{{ order.id }} - ADDmeCART{% endblock %}
+
+{% block body %}
+<div style="max-width: 600px; margin: 40px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eaeaea;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f5f6fa; padding-bottom: 15px; margin-bottom: 25px;">
+        <h2 style="margin: 0; color: #2c3e50;">Order #{{ order.id }}</h2>
+        <span style="background: #e1f5fe; color: #0288d1; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em;">
+            {{ order.orderStatus }}
+        </span>
+    </div>
+
+    <div style="margin-bottom: 30px;">
+        <p style="color: #7f8fa6; margin: 5px 0;"><strong>Date Placed:</strong> {{ order.createdAt|date('F j, Y, g:i a') }}</p>
+        <p style="color: #7f8fa6; margin: 5px 0;"><strong>Total Amount:</strong> <span style="color: #2ecc71; font-weight: bold;">₱{{ order.totalAmount|number_format(2) }}</span></p>
+        {% if order.trackingNumber %}
+            <p style="color: #7f8fa6; margin: 5px 0;"><strong>Transaction ID:</strong> <code style="background: #f8f9fa; padding: 3px 8px; border-radius: 4px;">{{ order.trackingNumber }}</code></p>
+        {% endif %}
+    </div>
+
+    {# A visual mock-up of an order timeline #}
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #eee;">
+        <h3 style="margin-top: 0; font-size: 1.1em; color: #34495e;">Tracking Timeline</h3>
+        
+        <ul style="list-style-type: none; padding-left: 10px; margin: 0; border-left: 3px solid #3498db;">
+            <li style="position: relative; padding-left: 20px; margin-bottom: 20px;">
+                <span style="position: absolute; left: -11px; top: 0; width: 15px; height: 15px; background: #3498db; border-radius: 50%; border: 2px solid white;"></span>
+                <strong style="color: #2c3e50;">Order Verified</strong><br>
+                <span style="font-size: 0.85em; color: #7f8fa6;">Payment was successful. Preparing for shipment.</span>
+            </li>
+            <li style="position: relative; padding-left: 20px; margin-bottom: 20px; opacity: 0.5;">
+                <span style="position: absolute; left: -11px; top: 0; width: 15px; height: 15px; background: #bdc3c7; border-radius: 50%; border: 2px solid white;"></span>
+                <strong>Handed to Courier</strong><br>
+                <span style="font-size: 0.85em;">Waiting for seller to dispatch.</span>
+            </li>
+            <li style="position: relative; padding-left: 20px; opacity: 0.5;">
+                <span style="position: absolute; left: -11px; top: 0; width: 15px; height: 15px; background: #bdc3c7; border-radius: 50%; border: 2px solid white;"></span>
+                <strong>Delivered</strong><br>
+                <span style="font-size: 0.85em;">Package arrives at your address.</span>
+            </li>
+        </ul>
+    </div>
+
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="{{ path('app_user_orders') }}" style="color: #3498db; text-decoration: none; font-weight: bold;">&larr; Back to My Orders</a>
+    </div>
+
+</div>
+{% endblock %}

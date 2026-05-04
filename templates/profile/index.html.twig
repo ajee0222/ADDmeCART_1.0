@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Profile - ADDmeCART{% endblock %}
+
+{% block body %}
+<div style="max-width: 600px; margin: 40px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+    <h2 style="color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px;">My Seller Profile</h2>
+
+    {% for message in app.flashes('success') %}
+        <div style="background-color: #d4edda; color: #155724; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+            <strong>✓ Success:</strong> {{ message }}
+        </div>
+    {% endfor %}
+
+    <form method="POST" style="margin-top: 20px;">
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; color: #555; font-weight: bold; margin-bottom: 8px;">Store Name</label>
+            <input type="text" name="storeName" value="{{ user.storeName }}" placeholder="e.g. Jacob's Tech Shop" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em;">
+            <small style="color: #7f8fa6; display: block; margin-top: 5px;">This is the name customers will see on your products.</small>
+        </div>
+
+        <button type="submit" style="background-color: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-size: 1em; font-weight: bold; cursor: pointer;">
+            Save Store Name
+        </button>
+    </form>
+</div>
+{% endblock %}

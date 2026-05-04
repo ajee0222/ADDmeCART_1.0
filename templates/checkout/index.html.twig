@@ -11,86 +11,110 @@
         <p style="color: #666; margin-bottom: 30px;">Total Items: {{ totalItems }} | Grand Total: <strong>₱{{ total|number_format(2) }}</strong></p>
 
         <div style="margin-bottom: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border: 1px dashed #ccc;">
-            <p style="font-weight: bold; color: #0056b3; margin-top: 0;">1. Scan to Pay via GCash</p>
+            <p style="font-weight: bold; color: #0056b3; margin-top: 0;">Selected Payment Method</p>
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MockGCashPaymentEndpoint" alt="GCash QR Code" style="margin-bottom: 10px;">
             <p style="font-size: 14px; color: #777; margin-bottom: 0;">Scan this mock QR code to simulate a payment.</p>
         </div>
 
         <form id="checkoutForm" action="{{ path('app_checkout_process') }}" method="POST">
-            <p style="font-weight: bold; color: #0056b3; text-align: left;">2. Verify & Complete</p>
-            
-            <div style="margin-bottom: 20px; text-align: left;">
-                <label for="security_pin" style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Enter 4-Digit Security PIN</label>
-                <input type="password" name="security_pin" id="security_pin" maxlength="4" required pattern="\d{4}" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; letter-spacing: 5px; text-align: center;">
-            </div>
-
-            <!-- THE HIDDEN FIELD -->
             <input type="hidden" name="transaction_id" id="transaction_id" value="">
+            <input type="hidden" name="security_pin" id="hidden_security_pin" value="">
 
-            <!-- API Verification Button -->
-            <button type="button" id="apiTestBtn" onclick="runMockApiTest()" style="width: 100%; padding: 14px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">
-                Verify API Payment
-            </button>
-
-            <!-- Final Submit Button (Hidden until API succeeds) -->
-            <button type="submit" id="btn-submit-order" style="display: none; width: 100%; padding: 14px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; text-transform: uppercase; letter-spacing: 1px;">
-                Complete Order
+            <button type="button" id="btn-proceed" onclick="openPinModal()" style="width: 100%; padding: 14px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; text-transform: uppercase; letter-spacing: 1px;">
+                Place Order
             </button>
         </form>
 
     </div>
 </div>
 
-<script>
-function runMockApiTest() {
-    const pinInput = document.getElementById('security_pin').value;
-    const btn = document.getElementById('apiTestBtn');
-    const submitBtn = document.getElementById('btn-submit-order');
-    const hiddenInput = document.getElementById('transaction_id');
+{# ========================================== #}
+{# THE SRS REQUIREMENT: 4-Digit Security PIN  #}
+{# ========================================== #}
+<div id="pinModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(2px);">
     
-    if(pinInput.length !== 4) {
-        alert("Please enter your 4-Digit PIN first.");
-        return;
+    <div style="background-color: white; padding: 30px; border-radius: 12px; width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+        <h3 style="margin-top: 0; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px;">Before You Proceed</h3>
+        <p style="color: #555; margin-bottom: 20px;">Please Enter your 4-Digit PIN</p>
+        
+        <input type="password" id="modalPinInput" maxlength="4" pattern="\d{4}" placeholder="****" style="font-size: 28px; width: 120px; text-align: center; letter-spacing: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 25px; outline: none;">
+        
+        <p id="pinErrorText" style="color: #e74c3c; font-size: 0.85em; display: none; margin-top: -15px; margin-bottom: 15px;">PIN must be exactly 4 digits.</p>
+        
+        <div style="display: flex; justify-content: space-between; gap: 15px;">
+            <button type="button" onclick="closePinModal()" style="flex: 1; padding: 12px; border: 1px solid #ccc; background: #f8f9fa; color: #333; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                Cancel
+            </button>
+            <button type="button" id="modalConfirmBtn" onclick="confirmPinAndProcess()" style="flex: 1; padding: 12px; border: none; background: #2ecc71; color: white; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('pinModal');
+    const modalPinInput = document.getElementById('modalPinInput');
+    const errorText = document.getElementById('pinErrorText');
+    const hiddenSecurityPin = document.getElementById('hidden_security_pin');
+    const hiddenTransactionId = document.getElementById('transaction_id');
+    const checkoutForm = document.getElementById('checkoutForm');
+    const proceedBtn = document.getElementById('btn-proceed');
+
+    function openPinModal() {
+        modal.style.display = 'flex';
+        modalPinInput.value = '';
+        errorText.style.display = 'none';
+        modalPinInput.style.borderColor = '#ddd';
+        modalPinInput.focus();
     }
 
-    // Change button state to show we are "contacting" the external server
-    btn.innerHTML = "Processing API Request...";
-    btn.style.backgroundColor = "#ffc107";
-    btn.style.color = "#000";
-    btn.disabled = true;
+    function closePinModal() {
+        modal.style.display = 'none';
+    }
 
-    // Make a real HTTP fetch request to our mock endpoint
-    fetch('/api/mock-gcash-verify', {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        if(data.status === 'success') {
-            // ==========================================
-            // TEST CASE 4: THE INJECTION
-            // ==========================================
-            // We take the 'transaction_id' from the JSON and shove it into the hidden input
-            hiddenInput.value = data.transaction_id;
+    function confirmPinAndProcess() {
+        const pinValue = modalPinInput.value;
+        
+        if (/^\d{4}$/.test(pinValue)) {
+            // Valid 4-digit PIN!
+            hiddenSecurityPin.value = pinValue;
+            
+            // Close modal and update main button UI
+            closePinModal();
+            proceedBtn.innerHTML = "Processing API Request...";
+            proceedBtn.style.backgroundColor = "#ffc107";
+            proceedBtn.style.color = "#000";
+            proceedBtn.disabled = true;
 
-            // Print to console so we can easily see it during QA testing!
-            console.log("SUCCESS! Injected Transaction ID:", hiddenInput.value);
-            
-            // Update UI to show success and reveal the final checkout button
-            btn.innerHTML = "API Verification Complete!";
-            btn.style.backgroundColor = "#e9ecef";
-            btn.style.color = "#28a745";
-            
-            submitBtn.style.display = "block"; // Reveal the submit button
+            // Make the HTTP fetch request to the mock GCash endpoint
+            fetch('/api/mock-gcash-verify', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    // Inject the transaction ID
+                    hiddenTransactionId.value = data.transaction_id;
+                    
+                    // Automatically submit the form to the backend!
+                    checkoutForm.submit();
+                }
+            })
+            .catch(error => {
+                console.error("API Error: ", error);
+                alert("API Connection Failed");
+                proceedBtn.innerHTML = "Place Order";
+                proceedBtn.style.backgroundColor = "#0056b3";
+                proceedBtn.style.color = "#fff";
+                proceedBtn.disabled = false;
+            });
+
+        } else {
+            // Invalid PIN UI change
+            errorText.style.display = 'block';
+            modalPinInput.style.borderColor = '#e74c3c';
         }
-    })
-    .catch(error => {
-        console.error("API Error: ", error);
-        alert("API Connection Failed");
-        btn.innerHTML = "Verify API Payment";
-        btn.style.backgroundColor = "#28a745";
-        btn.style.color = "#fff";
-        btn.disabled = false;
-    });
-}
+    }
 </script>
 {% endblock %}

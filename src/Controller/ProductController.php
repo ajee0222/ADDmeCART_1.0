@@ -34,8 +34,14 @@ class ProductController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // --- THE UPGRADE: Link the product to the logged-in Seller ---
+            $product->setSeller($this->getUser()); 
+            
             $entityManager->persist($product);
             $entityManager->flush();
+
+            // Flash a success message
+            $this->addFlash('success', 'Your product was successfully added to your store!');
 
             return $this->redirectToRoute('app_product_catalog');
         }

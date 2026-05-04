@@ -35,6 +35,9 @@ class Product
     #[ORM\Column(nullable: true)]
     private ?float $starRating = null;
 
+    #[ORM\ManyToOne(inversedBy: 'products')]
+    private ?User $seller = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -120,6 +123,18 @@ class Product
     public function setStarRating(?float $starRating): static
     {
         $this->starRating = $starRating;
+
+        return $this;
+    }
+
+    public function getSeller(): ?User
+    {
+        return $this->seller;
+    }
+
+    public function setSeller(?User $seller): static
+    {
+        $this->seller = $seller;
 
         return $this;
     }

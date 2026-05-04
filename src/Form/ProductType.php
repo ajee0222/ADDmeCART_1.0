@@ -18,7 +18,7 @@ class ProductType extends AbstractType
             ->add('stockQuantity')
             ->add('category')
             ->add('thumbnailImage')
-            ->add('starRating')
+            // Removed starRating! It should default to null or 0 in the database.
         ;
     }
 

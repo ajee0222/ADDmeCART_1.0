@@ -13,6 +13,7 @@
             <div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <div>
+                        {# THE FIX: Show Alphanumeric Reference Number or fallback to ID #}
                         <strong style="font-size: 1.1em;">Order #{{ order.referenceNumber|default(order.id) }}</strong>
                         <div style="color: #7f8fa6; font-size: 0.9em;">Placed on: {{ order.createdAt|date('M d, Y h:i A') }}</div>
                     </div>
@@ -23,7 +24,8 @@
                 
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="background: #e1f5fe; color: #0288d1; padding: 5px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">
-                        Status: Pending Processing
+                        {# THE FIX: Dynamic Database Status #}
+                        Status: {{ order.orderStatus }}
                     </span>
                     
                     {# THE LINK TO BUG 3: Dynamic Tracking Button #}

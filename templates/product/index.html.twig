@@ -72,6 +72,12 @@
                 
                 <div class="category">{{ product.category }}</div>
                 <h3 class="product-title">{{ product.name }}</h3>
+                
+                {# THE NEW CODE: Show the Store Name #}
+                <div style="font-size: 0.85em; color: #7f8fa6; margin-top: 5px; margin-bottom: 10px;">
+                    Sold by: <strong style="color: #3498db;">{{ product.seller.storeName|default('ADDmeCART Official') }}</strong>
+                </div>
+
                 <p class="product-desc">{{ product.description }}</p>
                 
                 <div class="price-stock-row">

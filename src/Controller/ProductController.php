@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Review;
 use App\Entity\Product;
 use App\Form\ProductType;
+use App\Form\ReviewType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,11 +26,29 @@ class ProductController extends AbstractController
         ]);
     }
 
-    #[Route('/product/{id}', name: 'app_product_show', requirements: ['id' => '\d+'])]
-    public function show(Product $product): Response
+    // Merged show method with correct routing and Review logic
+    #[Route('/product/{id}', name: 'app_product_show')]
+    public function show(Product $product, Request $request, EntityManagerInterface $entityManager): Response
     {
+        $review = new Review();
+        $form = $this->createForm(ReviewType::class, $review);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Securely link the review to the current product and logged-in user
+            $review->setProduct($product); //
+            $review->setUser($this->getUser()); 
+            $review->setCreatedAt(new \DateTimeImmutable());
+
+            $entityManager->persist($review);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_product_show', ['id' => $product->getId()]);
+        }
+
         return $this->render('product/show.html.twig', [
             'product' => $product,
+            'reviewForm' => $form->createView(),
         ]);
     }
 

@@ -52,10 +52,20 @@
         <div style="flex: 1; min-width: 350px; background: var(--surface); border-radius: var(--radius-lg); padding: 30px; box-shadow: var(--shadow-md); border: 1px solid var(--border);">
             <h3 style="border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px;">User Comments</h3>
 
+            {# Star Filter Buttons #}
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px;">
+                <button class="filter-btn active" data-filter="0" style="padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--primary); color: #fff; cursor: pointer; font-size: 0.85rem;">All</button>
+                <button class="filter-btn" data-filter="5" style="padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-size: 0.85rem;">★★★★★</button>
+                <button class="filter-btn" data-filter="4" style="padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-size: 0.85rem;">★★★★</button>
+                <button class="filter-btn" data-filter="3" style="padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-size: 0.85rem;">★★★</button>
+                <button class="filter-btn" data-filter="2" style="padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-size: 0.85rem;">★★</button>
+                <button class="filter-btn" data-filter="1" style="padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-size: 0.85rem;">★</button>
+            </div>
+
             {# Reviews list #}
             <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px; position: relative;">
                 {% for review in product.reviews %}
-                    <div style="border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;">
+                    <div class="review-item" data-rating="{{ review.rating }}" style="border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between;">
                             <strong>{{ review.user.email }}</strong>
                             <span style="color: #f39c12;">{% for i in 1..5 %}{{ i <= review.rating ? '★' : '☆' }}{% endfor %}</span>
@@ -64,8 +74,9 @@
                         <small style="color: var(--text-muted);">{{ review.createdAt|date('M d, Y') }}</small>
                     </div>
                 {% else %}
-                    <p style="text-align: center; color: var(--text-muted);">No reviews yet.</p>
+                    <p class="no-reviews-msg" style="text-align: center; color: var(--text-muted);">No reviews yet.</p>
                 {% endfor %}
+                <p class="no-filter-results" style="display: none; text-align: center; color: var(--text-muted);">No reviews with this rating.</p>
             </div>
 
             {# Review form #}
@@ -85,5 +96,39 @@
 
     </div>
 </div>
+
+<script>
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const reviewItems = document.querySelectorAll('.review-item');
+    const noFilterMsg = document.querySelector('.no-filter-results');
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const filter = parseInt(btn.dataset.filter);
+
+            // Update active button style
+            filterBtns.forEach(b => {
+                b.style.background = 'var(--bg)';
+                b.style.color = '';
+                b.classList.remove('active');
+            });
+            btn.style.background = 'var(--primary)';
+            btn.style.color = '#fff';
+            btn.classList.add('active');
+
+            // Show/hide reviews
+            let visibleCount = 0;
+            reviewItems.forEach(item => {
+                const rating = parseInt(item.dataset.rating);
+                const show = filter === 0 || rating === filter;
+                item.style.display = show ? 'block' : 'none';
+                if (show) visibleCount++;
+            });
+
+            // Show message if no reviews match
+            noFilterMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+        });
+    });
+</script>
 
 {% endblock %}

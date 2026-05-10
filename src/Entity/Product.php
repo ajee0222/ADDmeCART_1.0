@@ -40,10 +40,8 @@ class Product
     #[ORM\ManyToOne(inversedBy: 'products')]
     private ?User $seller = null;
 
-    /**
-     * @var Collection<int, Review>
-     */
-    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'product')]
+    /** @var Collection<int, Review> */
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Review::class, orphanRemoval: true)]
     private Collection $reviews;
 
     public function __construct()
@@ -152,9 +150,7 @@ class Product
         return $this;
     }
 
-    /**
-     * @return Collection<int, Review>
-     */
+    /** @return Collection<int, Review> */
     public function getReviews(): Collection
     {
         return $this->reviews;
@@ -173,7 +169,6 @@ class Product
     public function removeReview(Review $review): static
     {
         if ($this->reviews->removeElement($review)) {
-            // set the owning side to null (unless already changed)
             if ($review->getProduct() === $this) {
                 $review->setProduct(null);
             }

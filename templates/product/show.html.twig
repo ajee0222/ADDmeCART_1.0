@@ -49,9 +49,11 @@
         </div>
 
         {# RIGHT SIDE: COMMENT BLOCK #}
-        <div style="flex: 1; min-width: 350px; background: var(--surface); border-radius: var(--radius-lg); padding: 30px; box-shadow: var(--shadow-md); border: 1px solid var(--border); position: sticky; top: 20px;">
+        <div style="flex: 1; min-width: 350px; background: var(--surface); border-radius: var(--radius-lg); padding: 30px; box-shadow: var(--shadow-md); border: 1px solid var(--border);">
             <h3 style="border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px;">User Comments</h3>
-            <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+
+            {# Reviews list #}
+            <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px; position: relative;">
                 {% for review in product.reviews %}
                     <div style="border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between;">
@@ -66,23 +68,22 @@
                 {% endfor %}
             </div>
 
-            <div style="background: var(--bg); padding: 20px; border-radius: var(--radius-md);">
-    <h4>Write a Comment</h4>
-    {% if app.user %}
-        {{ form_start(reviewForm) }}
-            {{ form_row(reviewForm.rating) }}
-            {{ form_row(reviewForm.comment) }}
-            {{ form_row(reviewForm._token) }}
-            {{ form_end(reviewForm, {'render_rest': false}) }}
-            
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
-        {# Use 'render_rest': false to prevent any unrendered fields from appearing below the button #}
-        {{ form_end(reviewForm, {'render_rest': false}) }}
-    {% else %}
-        <p>Please <a href="{{ path('app_login') }}">log in</a> to comment.</p>
-    {% endif %}
-</div>
+            {# Review form #}
+            <div style="background: var(--bg); padding: 20px; border-radius: var(--radius-md); position: relative; z-index: 1;">
+                <h4 style="margin-top: 0;">Write a Comment</h4>
+                {% if app.user %}
+                    {{ form_start(reviewForm) }}
+                        {{ form_row(reviewForm.rating) }}
+                        {{ form_row(reviewForm.comment) }}
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Submit Review</button>
+                    {{ form_end(reviewForm) }}
+                {% else %}
+                    <p>Please <a href="{{ path('app_login') }}">log in</a> to leave a review.</p>
+                {% endif %}
+            </div>
         </div>
+
     </div>
 </div>
+
 {% endblock %}

@@ -26,33 +26,7 @@ class ProductController extends AbstractController
         ]);
     }
 
-    // Merged show method with correct routing and Review logic
-    #[Route('/product/{id}', name: 'app_product_show')]
-    public function show(Product $product, Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $review = new Review();
-        $form = $this->createForm(ReviewType::class, $review);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Securely link the review to the current product and logged-in user
-            $review->setProduct($product); //
-            $review->setUser($this->getUser()); 
-            $review->setCreatedAt(new \DateTimeImmutable());
-
-            $entityManager->persist($review);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_product_show', ['id' => $product->getId()]);
-        }
-
-        return $this->render('product/show.html.twig', [
-            'product' => $product,
-            'reviewForm' => $form->createView(),
-        ]);
-    }
-
-    // Only SELLERS can get into this method
+    // ✅ MUST come BEFORE /product/{id} to avoid routing conflict
     #[Route('/product/new', name: 'app_product_new')]
     #[IsGranted('ROLE_SELLER', message: 'Only registered sellers can add products.')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -62,12 +36,11 @@ class ProductController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $product->setSeller($this->getUser()); 
-            
+            $product->setSeller($this->getUser());
+
             $entityManager->persist($product);
             $entityManager->flush();
 
-            // Flash a success message
             $this->addFlash('success', 'Your product was successfully added to your store!');
 
             return $this->redirectToRoute('app_product_catalog');
@@ -79,11 +52,57 @@ class ProductController extends AbstractController
         ]);
     }
 
+    // ✅ Accepts GET (view page) and POST (submit review)
+    #[Route('/product/{id}', name: 'app_product_show', methods: ['GET', 'POST'])]
+    public function show(Product $product, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $review = new Review();
+        $form = $this->createForm(ReviewType::class, $review);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Guard: only logged-in users can submit reviews
+            if (!$this->getUser()) {
+                $this->addFlash('error', 'You must be logged in to submit a review.');
+                return $this->redirectToRoute('app_login');
+            }
+
+            $review->setProduct($product);
+            $review->setUser($this->getUser());
+            $review->setCreatedAt(new \DateTimeImmutable());
+
+            $entityManager->persist($review);
+
+            // Recalculate average star rating
+            // We flush first so the new review is included in getReviews()
+            $entityManager->flush();
+
+            $allReviews = $product->getReviews();
+            $totalRating = 0;
+            foreach ($allReviews as $r) {
+                $totalRating += $r->getRating();
+            }
+            if (count($allReviews) > 0) {
+                $product->setStarRating($totalRating / count($allReviews));
+            }
+
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Thank you for your review!');
+
+            return $this->redirectToRoute('app_product_show', ['id' => $product->getId()]);
+        }
+
+        return $this->render('product/show.html.twig', [
+            'product' => $product,
+            'reviewForm' => $form->createView(),
+        ]);
+    }
+
     #[Route('/product/{id}/edit', name: 'app_product_edit')]
     #[IsGranted('ROLE_SELLER')]
     public function edit(Product $product, Request $request, EntityManagerInterface $entityManager): Response
     {
-        // SECURITY CHECK
         if ($product->getSeller() !== $this->getUser()) {
             throw $this->createAccessDeniedException('You cannot edit a product you do not own.');
         }
@@ -107,12 +126,10 @@ class ProductController extends AbstractController
     #[IsGranted('ROLE_SELLER')]
     public function delete(Product $product, Request $request, EntityManagerInterface $entityManager): Response
     {
-        // SECURITY CHECK
         if ($product->getSeller() !== $this->getUser()) {
             throw $this->createAccessDeniedException('You cannot delete a product you do not own.');
         }
 
-        // CSRF Token validation for secure deletion
         if ($this->isCsrfTokenValid('delete'.$product->getId(), $request->request->get('_token'))) {
             $entityManager->remove($product);
             $entityManager->flush();
